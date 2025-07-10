@@ -122,6 +122,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): static
     {
         $this->password = $password;
+        $this->apiToken = bin2hex(random_bytes(20));
 
         return $this;
     }
