@@ -30,20 +30,24 @@ final class UserController extends AbstractController
         requestBody: new OA\RequestBody(
             required: true,
             description: 'Données de l\'utilisateur à inscrire',
-            content: new OA\JsonContent(
-                type: 'object',
-                properties: [
-                    new OA\Property(property: 'firstName', type: 'string', example: 'prénom'),
-                    new OA\Property(property: 'lastName', type: 'string', example: 'nom'),
-                    new OA\Property(property: 'pseudo', type: 'string', example: 'pseudo'),
-                    new OA\Property(property: 'email', type: 'string', example: 'adresse@email.com'),
-                    new OA\Property(property: 'password', type: 'string', example: 'Mdp@13charMIN')
-                ]
+            content: new OA\MediaType(
+                mediaType: 'multipart/form-data',
+                schema: new OA\Schema(
+                    required: ['firstName', 'lastName', 'pseudo', 'email', 'password'],
+                    properties: [
+                        new OA\Property(property: 'firstName', type: 'string', example: 'prénom'),
+                        new OA\Property(property: 'lastName', type: 'string', example: 'nom'),
+                        new OA\Property(property: 'pseudo', type: 'string', example: 'pseudo'),
+                        new OA\Property(property: 'pictureFile', type: 'string', format: 'binary'),
+                        new OA\Property(property: 'email', type: 'string', example: 'adresse@email.com'),
+                        new OA\Property(property: 'password', type: 'string', example: 'Mdp@12carMIN')
+                    ]
+                )
             )
         ),
         responses: [
             new OA\Response(
-                response: 201, 
+                response: 201,
                 description: 'Utilisateur inscrit avec succès',
                 content: new OA\JsonContent(
                     type: 'object',
@@ -51,12 +55,16 @@ final class UserController extends AbstractController
                         new OA\Property(property: 'user', type: 'string', example: 'adresse@email.com'),
                         new OA\Property(property: 'apiToken', type: 'string', example: '31a023e212..........3806eb9378'),
                         new OA\Property(
-                            property: 'roles', 
-                            type: 'array', 
+                            property: 'roles',
+                            type: 'array',
                             items: new OA\Items(type: 'string', example: 'ROLE_USER')
                         )
                     ]
                 )
+            ),
+            new OA\Response(
+                response: 400,
+                description: 'Requête invalide'
             )
         ]
     )]
@@ -67,6 +75,11 @@ final class UserController extends AbstractController
         $user->setCredit(20);
         $user->setCreatedAt(new \DateTimeImmutable());
         $user->setActive(1);
+
+        $avatarFile = $request->files->get('avatar_file');
+        if ($avatarFile) {
+            $user->setAvatarFileTemp($avatarFile);
+        }
 
         $this->manager->persist($user);
         $this->manager->flush();
@@ -79,6 +92,63 @@ final class UserController extends AbstractController
             Response::HTTP_CREATED
         );
     }
+
+    // #[route("/registration", name: "registration", methods: "POST")]
+    // #[OA\Post(
+    //     path: '/api/user/registration',
+    //     summary: 'Inscription d\'un nouvel utilisateur',
+    //     requestBody: new OA\RequestBody(
+    //         required: true,
+    //         description: 'Données de l\'utilisateur à inscrire',
+    //         content: new OA\JsonContent(
+    //             type: 'object',
+    //             properties: [
+    //                 new OA\Property(property: 'firstName', type: 'string', example: 'prénom'),
+    //                 new OA\Property(property: 'lastName', type: 'string', example: 'nom'),
+    //                 new OA\Property(property: 'pseudo', type: 'string', example: 'pseudo'),
+    //                 new OA\Property(property: 'email', type: 'string', example: 'adresse@email.com'),
+    //                 new OA\Property(property: 'password', type: 'string', example: 'Mdp@13charMIN')
+    //             ]
+    //         )
+    //     ),
+    //     responses: [
+    //         new OA\Response(
+    //             response: 201, 
+    //             description: 'Utilisateur inscrit avec succès',
+    //             content: new OA\JsonContent(
+    //                 type: 'object',
+    //                 properties: [
+    //                     new OA\Property(property: 'user', type: 'string', example: 'adresse@email.com'),
+    //                     new OA\Property(property: 'apiToken', type: 'string', example: '31a023e212..........3806eb9378'),
+    //                     new OA\Property(
+    //                         property: 'roles', 
+    //                         type: 'array', 
+    //                         items: new OA\Items(type: 'string', example: 'ROLE_USER')
+    //                     )
+    //                 ]
+    //             )
+    //         )
+    //     ]
+    // )]
+    // public function register(Request $request, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    // {
+    //     $user = $this->serializer->deserialize($request->getContent(), User::class, "json");
+    //     $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
+    //     $user->setCredit(20);
+    //     $user->setCreatedAt(new \DateTimeImmutable());
+    //     $user->setActive(1);
+
+    //     $this->manager->persist($user);
+    //     $this->manager->flush();
+
+    //     return new JsonResponse(
+    //         ["user" => $user->getUserIdentifier(),
+    //             "apiToken" => $user->getApiToken(),
+    //             "roles" => $user->getRoles(),
+    //         ],
+    //         Response::HTTP_CREATED
+    //     );
+    // }
 
     #[Route('/login', name: 'login', methods: 'POST')]
     #[OA\Post(
