@@ -2,16 +2,17 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+#[Vich\Uploadable]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -49,8 +50,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Vich\UploadableField(
         mapping: "avatars",
         fileNameProperty: "avatarFile",
-        maxSize: '500000',
-        mimeType: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    )]
+    #[Assert\File(
+        maxSize: "500k",
+        maxSizeMessage: "L'image ne doit pas dépasser {{ limit }}.",
+        extensions: ["jpg", "jpeg", "png", "webp"],
+        extensionsMessage: "L'extension du fichier est invalide ({{ extension }}). Les extensions valide sont : {{ extensions }}.",
     )]
     private ?File $avatarFileTemp = null;
 

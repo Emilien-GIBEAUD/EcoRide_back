@@ -5,13 +5,14 @@ namespace App\Controller;
 use App\Entity\User;
 use OpenApi\Attributes as OA;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response, JsonResponse};
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[route("api/user", name: "app_api_")]
 final class UserController extends AbstractController
@@ -38,7 +39,7 @@ final class UserController extends AbstractController
                         new OA\Property(property: 'firstName', type: 'string', example: 'prénom'),
                         new OA\Property(property: 'lastName', type: 'string', example: 'nom'),
                         new OA\Property(property: 'pseudo', type: 'string', example: 'pseudo'),
-                        new OA\Property(property: 'pictureFile', type: 'string', format: 'binary'),
+                        new OA\Property(property: 'avatarFile', type: 'string', format: 'binary'),
                         new OA\Property(property: 'email', type: 'string', example: 'adresse@email.com'),
                         new OA\Property(property: 'password', type: 'string', example: 'Mdp@12carMIN')
                     ]
@@ -68,87 +69,40 @@ final class UserController extends AbstractController
             )
         ]
     )]
-    public function register(Request $request, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    public function register(
+        Request $request,
+        UserPasswordHasherInterface $passwordHasher,
+        ValidatorInterface $validator,
+        ): JsonResponse
     {
-        $user = $this->serializer->deserialize($request->getContent(), User::class, "json");
-        $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
+        $user = new User();
+        $user->setFirstName($request->request->get('firstName'));
+        $user->setLastName($request->request->get('lastName'));
+        $user->setPseudo($request->request->get('pseudo'));
+        $user->setEmail($request->request->get('email'));
+        $user->setPassword($passwordHasher->hashPassword($user, $request->request->get('password')));
         $user->setCredit(20);
         $user->setCreatedAt(new \DateTimeImmutable());
         $user->setActive(1);
 
-        $avatarFile = $request->files->get('avatar_file');
+        $avatarFile = $request->files->get('avatarFile');
         if ($avatarFile) {
             $user->setAvatarFileTemp($avatarFile);
+            // validation manuelle du fichier (upload du fichier avec vich/uploader mais sans utiliser de formulaire symfony)
+            $errors = $validator->validate($user);
+            if (count($errors) > 0) {
+                $errorMessages = [];
+                foreach ($errors as $error) {
+                    $errorMessages[] = $error->getPropertyPath() . ': ' . $error->getMessage();
+                }
+                return $this->json(["message" => "Erreur lors de l'upload du fichier"], Response::HTTP_BAD_REQUEST);
+            }
         }
 
         $this->manager->persist($user);
         $this->manager->flush();
-
-        return new JsonResponse(
-            ["user" => $user->getUserIdentifier(),
-                "apiToken" => $user->getApiToken(),
-                "roles" => $user->getRoles(),
-            ],
-            Response::HTTP_CREATED
-        );
+        return $this->json(["message" => "Utilisateur créé avec succès"], Response::HTTP_CREATED);
     }
-
-    // #[route("/registration", name: "registration", methods: "POST")]
-    // #[OA\Post(
-    //     path: '/api/user/registration',
-    //     summary: 'Inscription d\'un nouvel utilisateur',
-    //     requestBody: new OA\RequestBody(
-    //         required: true,
-    //         description: 'Données de l\'utilisateur à inscrire',
-    //         content: new OA\JsonContent(
-    //             type: 'object',
-    //             properties: [
-    //                 new OA\Property(property: 'firstName', type: 'string', example: 'prénom'),
-    //                 new OA\Property(property: 'lastName', type: 'string', example: 'nom'),
-    //                 new OA\Property(property: 'pseudo', type: 'string', example: 'pseudo'),
-    //                 new OA\Property(property: 'email', type: 'string', example: 'adresse@email.com'),
-    //                 new OA\Property(property: 'password', type: 'string', example: 'Mdp@13charMIN')
-    //             ]
-    //         )
-    //     ),
-    //     responses: [
-    //         new OA\Response(
-    //             response: 201, 
-    //             description: 'Utilisateur inscrit avec succès',
-    //             content: new OA\JsonContent(
-    //                 type: 'object',
-    //                 properties: [
-    //                     new OA\Property(property: 'user', type: 'string', example: 'adresse@email.com'),
-    //                     new OA\Property(property: 'apiToken', type: 'string', example: '31a023e212..........3806eb9378'),
-    //                     new OA\Property(
-    //                         property: 'roles', 
-    //                         type: 'array', 
-    //                         items: new OA\Items(type: 'string', example: 'ROLE_USER')
-    //                     )
-    //                 ]
-    //             )
-    //         )
-    //     ]
-    // )]
-    // public function register(Request $request, UserPasswordHasherInterface $passwordHasher): JsonResponse
-    // {
-    //     $user = $this->serializer->deserialize($request->getContent(), User::class, "json");
-    //     $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
-    //     $user->setCredit(20);
-    //     $user->setCreatedAt(new \DateTimeImmutable());
-    //     $user->setActive(1);
-
-    //     $this->manager->persist($user);
-    //     $this->manager->flush();
-
-    //     return new JsonResponse(
-    //         ["user" => $user->getUserIdentifier(),
-    //             "apiToken" => $user->getApiToken(),
-    //             "roles" => $user->getRoles(),
-    //         ],
-    //         Response::HTTP_CREATED
-    //     );
-    // }
 
     #[Route('/login', name: 'login', methods: 'POST')]
     #[OA\Post(
@@ -161,13 +115,14 @@ final class UserController extends AbstractController
                 type: 'object',
                 properties: [
                     new OA\Property(property: 'username', type: 'string', example: 'adresse@email.com'),
-                    new OA\Property(property: 'password', type: 'string', example: 'Mdp@13charMIN')
+                    // /app/vendor/symfony/security-http/Authenticator/JsonLoginAuthenticator.php demande "username" et non "email"
+                    new OA\Property(property: 'password', type: 'string', example: 'Mdp@12carMIN')
                 ]
             )
         ),
         responses: [
             new OA\Response(
-                response: 200, 
+                response: 200,
                 description: 'Utilisateur connecté',
                 content: new OA\JsonContent(
                     type: 'object',
@@ -175,8 +130,8 @@ final class UserController extends AbstractController
                         new OA\Property(property: 'user', type: 'string', example: 'adresse@email.com'),
                         new OA\Property(property: 'apiToken', type: 'string', example: '31a023e212..........3806eb9378'),
                         new OA\Property(
-                            property: 'roles', 
-                            type: 'array', 
+                            property: 'roles',
+                            type: 'array',
                             items: new OA\Items(type: 'string', example: 'ROLE_USER')
                         )
                     ]
@@ -189,7 +144,6 @@ final class UserController extends AbstractController
         if ($user === null) {
             return new JsonResponse(['message' => 'Missing credentials to login'], Response::HTTP_UNAUTHORIZED);
         }
-
         return new JsonResponse([
             'user' => $user->getUserIdentifier(),
             'apiToken' => $user->getApiToken(),
@@ -203,7 +157,7 @@ final class UserController extends AbstractController
         summary: 'Récupération du profil de l\'utilisateur connecté',
         responses: [
             new OA\Response(
-                response: 200, 
+                response: 200,
                 description: 'Profil de l\'utilisateur connecté',
             )
         ]
@@ -239,7 +193,7 @@ final class UserController extends AbstractController
         ),
         responses: [
             new OA\Response(
-                response: 204, 
+                response: 204,
                 description: 'Utilisateur modifié (ATTENTION, apiToken modifié si le password a été envoyé)',
             )
         ]
