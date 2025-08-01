@@ -177,6 +177,9 @@ final class UserController extends AbstractController
         }
 
         $responseData = $this->serializer->serialize($user, "json");
+        $data = json_decode($responseData, true);
+        unset($data['password'], $data['avatarFileTemp'], $data['userIdentifier'], $data['id']);
+        $responseData = json_encode($data);
         return new JsonResponse($responseData, Response::HTTP_OK, [], true);
         
     }
