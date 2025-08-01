@@ -136,13 +136,17 @@ final class UserController extends AbstractController
                         )
                     ]
                 )
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Mail et/ou mot de passe inconnus'
             )
         ]
     )]
     public function login(#[CurrentUser] ?User $user): JsonResponse
     {
         if ($user === null) {
-            return new JsonResponse(['message' => 'Missing credentials to login'], Response::HTTP_UNAUTHORIZED);
+            return new JsonResponse(['message' => 'Mail et/ou mot de passe inconnus'], Response::HTTP_UNAUTHORIZED);
         }
         return new JsonResponse([
             'user' => $user->getUserIdentifier(),
@@ -159,13 +163,17 @@ final class UserController extends AbstractController
             new OA\Response(
                 response: 200,
                 description: 'Profil de l\'utilisateur connecté',
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Vous n\'êtes pas connecté ou vous n\'avez pas les droits pour accéder à cet utilisateur',
             )
         ]
     )]
     public function me(#[CurrentUser] ?User $user): JsonResponse
     {
         if ($user === null) {
-            return new JsonResponse(['message' => 'Missing credentials to see profile'], Response::HTTP_UNAUTHORIZED);
+            return new JsonResponse(['message' => 'Vous n\'êtes pas connecté ou vous n\'avez pas les droits pour accéder à cet utilisateur'], Response::HTTP_UNAUTHORIZED);
         }
 
         $responseData = $this->serializer->serialize($user, "json");
@@ -173,47 +181,79 @@ final class UserController extends AbstractController
         
     }
 
-    #[route("/edit", name: "edit", methods: "PUT")]
-    #[OA\Put(
+    #[route("/edit", name: "edit", methods: "POST")]
+    #[OA\POST(
         path: '/api/user/edit',
         summary: 'Modification d\'un profil utilisateur (un ou plusieurs champs)',
         requestBody: new OA\RequestBody(
             required: true,
-            description: 'Champs éventuels à mettre à jour (supprimer les lignes inutiles, une "," doit être présente à la fin de chaque ligne sauf la dernière). ATTENTION, modification de l\'apiToken si le password est envoyé.',
-            content: new OA\JsonContent(
-                type: 'object',
-                properties: [
-                    new OA\Property(property: 'firstName', type: 'string', example: 'prénom'),
-                    new OA\Property(property: 'lastName', type: 'string', example: 'nom'),
-                    new OA\Property(property: 'pseudo', type: 'string', example: 'pseudo'),
-                    new OA\Property(property: 'email', type: 'string', example: 'adresse@email.com'),
-                    new OA\Property(property: 'password', type: 'string', example: 'Mdp@13charMIN')
-                ]
+            description: 'Champs éventuels à mettre à jour (laissez vide si pas mis à jour).',
+            content: new OA\MediaType(
+                mediaType: 'multipart/form-data',
+                schema: new OA\Schema(
+                    properties: [
+                        new OA\Property(property: 'firstName', type: 'string', example: 'prénom'),
+                        new OA\Property(property: 'lastName', type: 'string', example: 'nom'),
+                        new OA\Property(property: 'pseudo', type: 'string', example: 'pseudo'),
+                        new OA\Property(property: 'avatarFile', type: 'string', format: 'binary'),
+                        new OA\Property(property: 'usageRole', type: 'string', example: '["driver"]', description: 'Rôle d\'utilisation de l\'utilisateur : ["driver"]=> conducteur et passager, []=> passager uniquement')
+                    ]
+                )
             )
         ),
         responses: [
             new OA\Response(
-                response: 204,
-                description: 'Utilisateur modifié (ATTENTION, apiToken modifié si le password a été envoyé)',
+                response: 200,
+                description: 'Utilisateur modifié avec succès',
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Vous n\'êtes pas connecté ou vous n\'avez pas les droits pour modifier cet utilisateur',
             )
         ]
     )]
-    public function edit(#[CurrentUser] ?User $user, Request $request,
-                        UserPasswordHasherInterface $passwordHasher): JsonResponse
+    public function edit(#[CurrentUser] ?User $user, Request $request, ValidatorInterface $validator): JsonResponse
     {
         if ($user) {
-            $user = $this->serializer->deserialize(
-                $request->getContent(),
-                User::class,
-                "json",
-                [AbstractNormalizer::OBJECT_TO_POPULATE => $user]
-            );
-            $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
+            if ($request->request->has('firstName')) {
+                $user->setFirstName($request->request->get('firstName'));
+            }
+            if ($request->request->has('lastName')) {
+                $user->setLastName($request->request->get('lastName'));
+            }
+            if ($request->request->has('pseudo')) {
+                $user->setPseudo($request->request->get('pseudo'));
+            }
+            if ($request->request->has('usageRole')) {
+                $usageRole = $request->request->get('usageRole');
+                if ($usageRole === "driver" || $usageRole === "") { // si passage par l'API
+                    $user->setUsageRole($usageRole === "driver" ? ["driver"] : []);
+                }
+                if ($usageRole === '["driver"]' || $usageRole === '[]') { // si passage par le front
+                    $usageRoleDecoded = json_decode($usageRole, true);
+                    $user->setUsageRole($usageRoleDecoded);
+                }
+            }
+
+            $avatarFile = $request->files->get('avatarFile');
+            if ($avatarFile) {
+                $user->setAvatarFileTemp($avatarFile);
+                // validation manuelle du fichier (upload du fichier avec vich/uploader mais sans utiliser de formulaire symfony)
+                $errors = $validator->validate($user);
+                if (count($errors) > 0) {
+                    $errorMessages = [];
+                    foreach ($errors as $error) {
+                        $errorMessages[] = $error->getPropertyPath() . ': ' . $error->getMessage();
+                    }
+                    return $this->json(["message" => "Erreur lors de l'upload du fichier"], Response::HTTP_BAD_REQUEST);
+                }
+            }
+
             $user->setUpdatedAt(new \DateTimeImmutable());
             $this->manager->flush();
-            return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+            return new JsonResponse(["message" => "Utilisateur modifié avec succès"], Response::HTTP_OK);
         }
-        return new JsonResponse(null, Response::HTTP_NOT_FOUND);
+        return new JsonResponse(['message' => 'Vous n\'êtes pas connecté ou vous n\'avez pas les droits pour modifier cet utilisateur'], Response::HTTP_UNAUTHORIZED);
     }
 
 }
