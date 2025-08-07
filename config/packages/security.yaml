@@ -33,7 +33,10 @@ security:
     access_control:
         - { path: ^api/user/registration, roles: PUBLIC_ACCESS }
         - { path: ^api/doc, roles: PUBLIC_ACCESS }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/api/brand, roles: ROLE_USER }
+        - { path: ^/api/color, roles: ROLE_USER }
+        - { path: ^/api/energy, roles: ROLE_USER }
+        - { path: ^/api/model, roles: ROLE_USER }
 
 when@test:
     security:

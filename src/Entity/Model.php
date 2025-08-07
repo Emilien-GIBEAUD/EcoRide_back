@@ -6,6 +6,7 @@ use App\Repository\ModelRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: ModelRepository::class)]
 class Model
@@ -15,11 +16,13 @@ class Model
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(['model'])]
     #[ORM\Column(length: 255)]
     private ?string $model = null;
 
     #[ORM\ManyToOne(inversedBy: 'models')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['model'])]
     private ?Brand $brand = null;
 
     /**

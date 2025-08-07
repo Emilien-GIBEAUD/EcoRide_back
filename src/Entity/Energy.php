@@ -6,6 +6,7 @@ use App\Repository\EnergyRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: EnergyRepository::class)]
 class Energy
@@ -15,6 +16,7 @@ class Energy
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(['energy'])]
     #[ORM\Column(length: 255)]
     private ?string $energy = null;
 
