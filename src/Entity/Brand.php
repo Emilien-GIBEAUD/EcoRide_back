@@ -24,16 +24,9 @@ class Brand
     #[ORM\OneToMany(targetEntity: Model::class, mappedBy: 'brand', orphanRemoval: true)]
     private Collection $models;
 
-    /**
-     * @var Collection<int, Car>
-     */
-    #[ORM\OneToMany(targetEntity: Car::class, mappedBy: 'brand', orphanRemoval: true)]
-    private Collection $cars;
-
     public function __construct()
     {
         $this->models = new ArrayCollection();
-        $this->cars = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -77,36 +70,6 @@ class Brand
             // set the owning side to null (unless already changed)
             if ($model->getBrand() === $this) {
                 $model->setBrand(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Car>
-     */
-    public function getCars(): Collection
-    {
-        return $this->cars;
-    }
-
-    public function addCar(Car $car): static
-    {
-        if (!$this->cars->contains($car)) {
-            $this->cars->add($car);
-            $car->setBrand($this);
-        }
-
-        return $this;
-    }
-
-    public function removeCar(Car $car): static
-    {
-        if ($this->cars->removeElement($car)) {
-            // set the owning side to null (unless already changed)
-            if ($car->getBrand() === $this) {
-                $car->setBrand(null);
             }
         }
 

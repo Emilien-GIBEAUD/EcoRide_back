@@ -41,15 +41,15 @@ class Car
 
     #[ORM\ManyToOne(inversedBy: 'cars')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Brand $brand = null;
-
-    #[ORM\ManyToOne(inversedBy: 'cars')]
-    #[ORM\JoinColumn(nullable: false)]
     private ?Color $color = null;
 
     #[ORM\ManyToOne(inversedBy: 'cars')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Energy $energy = null;
+
+    #[ORM\ManyToOne(inversedBy: 'cars')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Model $model = null;
 
     public function getId(): ?int
     {
@@ -152,18 +152,6 @@ class Car
         return $this;
     }
 
-    public function getBrand(): ?Brand
-    {
-        return $this->brand;
-    }
-
-    public function setBrand(?Brand $brand): static
-    {
-        $this->brand = $brand;
-
-        return $this;
-    }
-
     public function getColor(): ?Color
     {
         return $this->color;
@@ -184,6 +172,18 @@ class Car
     public function setEnergy(?Energy $energy): static
     {
         $this->energy = $energy;
+
+        return $this;
+    }
+
+    public function getModel(): ?Model
+    {
+        return $this->model;
+    }
+
+    public function setModel(?Model $model): static
+    {
+        $this->model = $model;
 
         return $this;
     }
