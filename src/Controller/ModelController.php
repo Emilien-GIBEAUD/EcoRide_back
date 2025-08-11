@@ -13,7 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 final class ModelController extends AbstractController
 {
     public function __construct(
-        private ModelRepository $repository,
+        private ModelRepository $modelRepository,
         private BrandRepository $brandRepository,
         private SerializerInterface $serializer,
         )
@@ -51,8 +51,8 @@ final class ModelController extends AbstractController
             return new JsonResponse(['error' => 'Marque et/ou modèles non trouvé(e)(s)'], Response::HTTP_NOT_FOUND);
         }
         
-        $models = $this->repository->findBy(["brand" => $brandEntity]);
+        $models = $this->modelRepository->findBy(["brand" => $brandEntity]);
         $responseData = $this->serializer->serialize($models,"json", ['groups' => ['model']]);
-        return new JsonResponse($responseData, Response::HTTP_OK, ['test'], true);
+        return new JsonResponse($responseData, Response::HTTP_OK, [], true);
     }
 }
