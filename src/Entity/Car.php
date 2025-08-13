@@ -13,6 +13,7 @@ class Car
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['car'])]
     private ?int $id = null;
 
     #[Groups(['car'])]
