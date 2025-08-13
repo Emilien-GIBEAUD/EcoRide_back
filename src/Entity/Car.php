@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\CarRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CarRepository::class)]
 class Car
@@ -14,39 +15,50 @@ class Car
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(['car'])]
     #[ORM\Column(length: 255)]
     private ?string $licencePlate = null;
 
+    #[Groups(['car'])]
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
     private ?\DateTimeImmutable $firstRegistration = null;
 
+    #[Groups(['car'])]
     #[ORM\Column(type: Types::SMALLINT)]
     private ?int $placeNb = null;
 
+    #[Groups(['car'])]
     #[ORM\Column]
     private ?bool $main = null;
 
+    #[Groups(['car'])]
     #[ORM\Column]
     private ?bool $active = null;
 
+    #[Groups(['car'])]
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[Groups(['car'])]
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[Groups(['car'])]
     #[ORM\ManyToOne(inversedBy: 'cars')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
+    #[Groups(['car'])]
     #[ORM\ManyToOne(inversedBy: 'cars')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Color $color = null;
 
+    #[Groups(['car'])]
     #[ORM\ManyToOne(inversedBy: 'cars')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Energy $energy = null;
 
+    #[Groups(['car'])]
     #[ORM\ManyToOne(inversedBy: 'cars')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Model $model = null;

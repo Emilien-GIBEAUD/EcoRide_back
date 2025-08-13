@@ -9,6 +9,7 @@ use App\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
@@ -17,17 +18,20 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 #[Vich\Uploadable]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    #[Groups(['user'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(['car', 'user'])]
     #[ORM\Column(length: 180)]
     private ?string $email = null;
 
     /**
      * @var list<string> The user roles
      */
+    #[Groups(['user'])]
     #[ORM\Column]
     private array $roles = [];
 
@@ -37,18 +41,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
+    #[Groups(['user'])]
     #[ORM\Column(length: 255)]
     private ?string $firstName = null;
 
+    #[Groups(['user'])]
     #[ORM\Column(length: 255)]
     private ?string $lastName = null;
 
+    #[Groups(['user'])]
     #[ORM\Column(length: 255)]
     private ?string $pseudo = null;
 
+    #[Groups(['user'])]
     #[ORM\Column(length: 255)]
     private ?string $avatarFile = 'user.svg';
 
+    #[Groups(['user'])]
     #[Vich\UploadableField(
         mapping: "avatars",
         fileNameProperty: "avatarFile",
@@ -61,33 +70,41 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     )]
     private ?File $avatarFileTemp = null;
 
+    #[Groups(['user'])]
     #[ORM\Column(nullable: true)]
     private ?float $note = null;
 
+    #[Groups(['user'])]
     #[ORM\Column]
     private ?int $credit = null;
 
+    #[Groups(['user'])]
     #[ORM\Column]
     private array $usageRole = [];
 
     #[ORM\Column(length: 255)]
     private ?string $apiToken = null;
 
+    #[Groups(['user'])]
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[Groups(['user'])]
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[Groups(['user'])]
     #[ORM\Column]
     private ?bool $active = null;
 
+    #[Groups(['user'])]
     #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
     private ?Preference $preference = null;
 
     /**
      * @var Collection<int, Car>
      */
+    #[Groups(['user'])]
     #[ORM\OneToMany(targetEntity: Car::class, mappedBy: 'user', orphanRemoval: true)]
     private Collection $cars;
 

@@ -11,7 +11,6 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[route("api/user", name: "app_api_")]
@@ -176,7 +175,7 @@ final class UserController extends AbstractController
             return new JsonResponse(['message' => 'Vous n\'êtes pas connecté ou vous n\'avez pas les droits pour accéder à cet utilisateur'], Response::HTTP_UNAUTHORIZED);
         }
 
-        $responseData = $this->serializer->serialize($user, "json");
+        $responseData = $this->serializer->serialize($user, "json", ['groups' => ['user']]);
         $data = json_decode($responseData, true);
         unset($data['password'], $data['avatarFileTemp'], $data['userIdentifier'], $data['id']);
         $responseData = json_encode($data);

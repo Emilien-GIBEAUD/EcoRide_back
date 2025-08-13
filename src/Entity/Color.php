@@ -16,7 +16,7 @@ class Color
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(['color'])]
+    #[Groups(['car', 'color'])]
     #[ORM\Column(length: 255)]
     private ?string $color = null;
 

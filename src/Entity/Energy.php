@@ -16,7 +16,7 @@ class Energy
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(['energy'])]
+    #[Groups(['car', 'energy'])]
     #[ORM\Column(length: 255)]
     private ?string $energy = null;
 

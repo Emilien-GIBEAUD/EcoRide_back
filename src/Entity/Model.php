@@ -16,13 +16,13 @@ class Model
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(['model'])]
+    #[Groups(['car', 'model'])]
     #[ORM\Column(length: 255)]
     private ?string $model = null;
 
     #[ORM\ManyToOne(inversedBy: 'models')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['model'])]
+    #[Groups(['car', 'model'])]
     private ?Brand $brand = null;
 
     /**

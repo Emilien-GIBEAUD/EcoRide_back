@@ -37,6 +37,7 @@ security:
         - { path: ^/api/color, roles: ROLE_USER }
         - { path: ^/api/energy, roles: ROLE_USER }
         - { path: ^/api/model, roles: ROLE_USER }
+        - { path: ^/api/car, roles: ROLE_USER }
 
 when@test:
     security:

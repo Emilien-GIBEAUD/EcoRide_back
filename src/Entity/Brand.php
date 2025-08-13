@@ -16,7 +16,7 @@ class Brand
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(['brand', 'model'])]
+    #[Groups(['brand', 'model', 'car'])]
     #[ORM\Column(length: 255)]
     private ?string $brand = null;
 
