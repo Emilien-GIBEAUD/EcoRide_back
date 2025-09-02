@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\CarRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -63,6 +65,17 @@ class Car
     #[ORM\ManyToOne(inversedBy: 'cars')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Model $model = null;
+
+    /**
+     * @var Collection<int, Travel>
+     */
+    #[ORM\OneToMany(targetEntity: Travel::class, mappedBy: 'car')]
+    private Collection $travel;
+
+    public function __construct()
+    {
+        $this->travel = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -197,6 +210,36 @@ class Car
     public function setModel(?Model $model): static
     {
         $this->model = $model;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Travel>
+     */
+    public function getTravel(): Collection
+    {
+        return $this->travel;
+    }
+
+    public function addTravel(Travel $travel): static
+    {
+        if (!$this->travel->contains($travel)) {
+            $this->travel->add($travel);
+            $travel->setCar($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTravel(Travel $travel): static
+    {
+        if ($this->travel->removeElement($travel)) {
+            // set the owning side to null (unless already changed)
+            if ($travel->getCar() === $this) {
+                $travel->setCar(null);
+            }
+        }
 
         return $this;
     }
