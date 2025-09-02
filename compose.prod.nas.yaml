@@ -1,0 +1,85 @@
+services:
+  php:
+    image: emiliengibeaud/ecoride_api:latest
+    # image: emiliengibeaud/ecoride_api:dev
+    restart: unless-stopped
+    command: ["sh", "-c", "sleep 60 && frankenphp run --config /etc/frankenphp/Caddyfile"]
+    environment:
+      APP_SECRET: ${APP_SECRET}
+      SERVER_NAME: ${SERVER_NAME}
+      MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      # Run "composer require symfony/orm-pack" to install and configure Doctrine ORM
+      DATABASE_URL: mysql://${MARIADB_USER}:${MARIADB_PASSWORD}@database:3306/${MARIADB_DATABASE}?serverVersion=${MARIADB_VERSION}-MariaDB&charset=utf8mb4
+      # Run "composer require symfony/mercure-bundle" to install and configure the Mercure integration
+      MERCURE_URL: ${CADDY_MERCURE_URL:-http://php/.well-known/mercure}
+      MERCURE_PUBLIC_URL: ${CADDY_MERCURE_PUBLIC_URL:-https://${SERVER_NAME:-localhost}:${HTTPS_PORT:-443}/.well-known/mercure}
+      MERCURE_JWT_SECRET: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      # The two next lines can be removed after initial installation
+      SYMFONY_VERSION: ${SYMFONY_VERSION:-}
+      STABILITY: ${STABILITY:-stable}
+    labels:
+      - "traefik.enable=true"
+      # Redirige les requêtes vers le chemin de l'API
+      - "traefik.http.routers.api.rule=Host(`petitmaraichin.myasustor.com`) && PathPrefix(`/ecoride/api`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls=true"
+      - "traefik.http.routers.api.tls.certresolver=myresolver"
+      - "traefik.http.services.api.loadbalancer.server.port=80"
+      # Supprime le préfixe avant d'envoyer la requête au conteneur ce qui permet à Symfony de fonctionner comme si l'API était à la racine
+      - "traefik.http.middlewares.ecoride-stripprefix.stripprefix.prefixes=/ecoride"
+      - "traefik.http.routers.api.middlewares=ecoride-stripprefix"
+    networks:
+      - ecoride-network
+      - traefik_proxy
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - database
+
+###> doctrine/doctrine-bundle ###
+  database:
+    image: mariadb:${MARIADB_VERSION}
+    environment:
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      # You should definitely change the password in production
+      MARIADB_RANDOM_ROOT_PASSWORD: "true"
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+    volumes:
+      - database_data:/var/lib/mysql:rw
+      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
+      # - ./docker/db/data:/var/lib/mysql:rw
+    networks:
+      - ecoride-network
+###< doctrine/doctrine-bundle ###
+
+  phpmyadmin:
+    image: phpmyadmin:5.2.2
+    environment:
+      PMA_HOST: database
+      PMA_PORT: 3306
+    ports:
+      - "4215:80"
+    depends_on:
+      - database
+    networks:
+      - ecoride-network
+      - traefik_proxy
+
+volumes:
+  caddy_data:
+  caddy_config:
+###> symfony/mercure-bundle ###
+###< symfony/mercure-bundle ###
+
+###> doctrine/doctrine-bundle ###
+  database_data:
+###< doctrine/doctrine-bundle ###
+
+networks:
+  traefik_proxy:
+    external: true
+  ecoride-network:
+    external: true

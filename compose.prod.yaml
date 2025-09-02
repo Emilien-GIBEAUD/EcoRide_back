@@ -8,3 +8,23 @@ services:
       APP_SECRET: ${APP_SECRET}
       MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
       MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
+    networks:
+      - ecoride-network
+    depends_on:
+      database:
+        condition: service_healthy
+
+  database:
+    networks:
+      - ecoride-network
+
+  phpmyadmin:
+    networks:
+      - ecoride-network
+      - traefik_proxy
+
+networks:
+  traefik_proxy:
+    external: true
+  ecoride-network:
+    external: true
