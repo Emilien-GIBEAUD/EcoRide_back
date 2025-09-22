@@ -119,7 +119,7 @@ final class CarController extends AbstractController
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Véhicules trouvés avec succès',
+                description: 'Véhicule(s) trouvé(s) avec succès',
             ),
             new OA\Response(
                 response: 401,

@@ -7,60 +7,78 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: TravelRepository::class)]
 class Travel
 {
+    #[Groups(['travel'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(['travel'])]
     #[ORM\Column]
     private ?bool $eco = null;
 
+    #[Groups(['travel'])]
     #[ORM\Column(type: Types::SMALLINT)]
     private ?int $travelPlace = null;
 
+    #[Groups(['travel'])]
     #[ORM\Column(type: Types::SMALLINT)]
     private ?int $availablePlace = null;
 
+    #[Groups(['travel'])]
     #[ORM\Column(type: Types::SMALLINT)]
     private ?int $price = null;
 
+    #[Groups(['travel'])]
     #[ORM\Column(length: 255)]
     private ?string $status = null;
 
+    #[Groups(['travel'])]
     #[ORM\Column]
     private ?\DateTimeImmutable $depDateTime = null;
 
+    #[Groups(['travel'])]
     #[ORM\Column(length: 255)]
     private ?string $depAddress = null;
 
+    #[Groups(['travel'])]
     #[ORM\Column]
     private ?float $depGeoX = null;
 
+    #[Groups(['travel'])]
     #[ORM\Column]
     private ?float $depGeoY = null;
 
+    #[Groups(['travel'])]
     #[ORM\Column]
     private ?\DateTimeImmutable $arrDateTime = null;
 
+    #[Groups(['travel'])]
     #[ORM\Column(length: 255)]
     private ?string $arrAddress = null;
 
+    #[Groups(['travel'])]
     #[ORM\Column]
     private ?float $arrGeoX = null;
 
+    #[Groups(['travel'])]
     #[ORM\Column]
     private ?float $arrGeoY = null;
 
+    #[Groups(['travel'])]
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[Groups(['travel'])]
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[Groups(['travel'])]
     #[ORM\ManyToOne(inversedBy: 'travel')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Car $car = null;
