@@ -108,9 +108,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Car::class, mappedBy: 'user', orphanRemoval: true)]
     private Collection $cars;
 
+    /**
+     * @var Collection<int, TravelUser>
+     */
+    #[ORM\OneToMany(targetEntity: TravelUser::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $travelUsers;
+
     public function __construct()
     {
         $this->cars = new ArrayCollection();
+        $this->travelUsers = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -390,6 +397,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($car->getUser() === $this) {
                 $car->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, TravelUser>
+     */
+    public function getTravelUsers(): Collection
+    {
+        return $this->travelUsers;
+    }
+
+    public function addTravelUser(TravelUser $travelUser): static
+    {
+        if (!$this->travelUsers->contains($travelUser)) {
+            $this->travelUsers->add($travelUser);
+            $travelUser->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTravelUser(TravelUser $travelUser): static
+    {
+        if ($this->travelUsers->removeElement($travelUser)) {
+            // set the owning side to null (unless already changed)
+            if ($travelUser->getUser() === $this) {
+                $travelUser->setUser(null);
             }
         }
 

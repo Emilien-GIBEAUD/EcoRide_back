@@ -257,5 +257,5 @@ final class UserController extends AbstractController
         }
         return new JsonResponse(['message' => 'Vous n\'êtes pas connecté ou vous n\'avez pas les droits pour modifier cet utilisateur'], Response::HTTP_UNAUTHORIZED);
     }
-
 }
+

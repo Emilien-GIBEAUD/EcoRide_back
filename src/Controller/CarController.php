@@ -4,8 +4,8 @@ namespace App\Controller;
 
 use App\Entity\{Car, User};
 use App\Repository\{BrandRepository, CarRepository, ColorRepository, EnergyRepository, ModelRepository};
-use OpenApi\Attributes as OA;
 use Doctrine\ORM\EntityManagerInterface;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response, JsonResponse};
 use Symfony\Component\Routing\Attribute\Route;
@@ -119,7 +119,7 @@ final class CarController extends AbstractController
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Véhicules trouvés avec succès',
+                description: 'Véhicule(s) trouvé(s) avec succès',
             ),
             new OA\Response(
                 response: 401,
@@ -228,14 +228,14 @@ final class CarController extends AbstractController
                 content: new OA\JsonContent(
                     type: 'object',
                     properties: [
-                    new OA\Property(property: 'id', type: 'integer', example: 1),
-                    new OA\Property(property: 'model', type: 'string', example: 'Forfour'),
-                    new OA\Property(property: 'color', type: 'string', example: 'Gris'),
-                    new OA\Property(property: 'energy', type: 'string', example: 'Diesel'),
-                    new OA\Property(property: 'licencePlate', type: 'string', example: 'AA 000 AA'),
-                    new OA\Property(property: 'firstRegistration', type: 'string', format:"date", example: '01/01/2005'),
-                    new OA\Property(property: 'placeNb', type: 'integer', example: 3),
-                    new OA\Property(property: 'createdAt', type: 'string', format:"date-time")
+                        new OA\Property(property: 'id', type: 'integer', example: 1),
+                        new OA\Property(property: 'model', type: 'string', example: 'Forfour'),
+                        new OA\Property(property: 'color', type: 'string', example: 'Gris'),
+                        new OA\Property(property: 'energy', type: 'string', example: 'Diesel'),
+                        new OA\Property(property: 'licencePlate', type: 'string', example: 'AA 000 AA'),
+                        new OA\Property(property: 'firstRegistration', type: 'string', format:"date", example: '01/01/2005'),
+                        new OA\Property(property: 'placeNb', type: 'integer', example: 3),
+                        new OA\Property(property: 'createdAt', type: 'string', format:"date-time")
                     ]
                 )
             ),
