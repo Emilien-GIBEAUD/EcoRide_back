@@ -10,6 +10,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: TravelRepository::class)]
+#[ORM\Table(name: "travel", indexes: [
+    new ORM\Index(name: "idx_travel_status_date", columns: ["status", "dep_date_time"])
+])]
 class Travel
 {
     #[Groups(['travel'])]

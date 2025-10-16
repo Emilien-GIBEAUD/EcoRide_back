@@ -161,55 +161,76 @@ final class TravelController extends AbstractController
 
 
 // exemple chatGPT suite discussion du 12/09/2025 pour routede résultats de recherche
-// A étudier et adapeter en temps voulu
+// A étudier et adapter en temps voulu
 // voir chatGPT si besoin pour la méthode de recherche dans TravelRepository
-
 // GET /api/travel/results?date={date}&start={start}&end={end}
 
-// use OpenApi\Attributes as OA;
+    #[Route('/search', name: 'travel_search', methods: ['GET'])]
+    #[OA\Get(
+        path: '/api/travel/search',
+        summary: 'Recherche de voyages',
+        description: 'Retourne la liste des voyages correspondant aux critères.',
+        parameters: [
+            new OA\QueryParameter(
+                name: 'date',
+                description: 'Date du voyage (format YYYY-MM-DD)',
+                required: true,
+                schema: new OA\Schema(type: 'string', format: 'date', example: '2026-03-20')
+            ),
+            new OA\QueryParameter(
+                name: 'depGeoX',
+                description: 'Ville de départ : coordonnée géocodée X',
+                required: true,
+                schema: new OA\Schema(type: 'number', example: -0.466)
+            ),
+            new OA\QueryParameter(
+                name: 'depGeoY',
+                description: 'Ville de départ : coordonnée géocodée Y',
+                required: true,
+                schema: new OA\Schema(type: 'number', example: 46.327)
+            ),
+            new OA\QueryParameter(
+                name: 'arrGeoX',
+                description: 'Ville d\'arrivée : coordonnée géocodée X',
+                required: true,
+                schema: new OA\Schema(type: 'number', example: -1.2704)
+            ),
+            new OA\QueryParameter(
+                name: 'arrGeoY',
+                description: 'Ville d\'arrivée : coordonnée géocodée Y',
+                required: true,
+                schema: new OA\Schema(type: 'number', example: 47.09231)
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Liste des voyages trouvés',
+                // content: new OA\JsonContent(type: 'array', items: new OA\Items(ref: '#/components/schemas/Travel'))
+            )
+        ]
+    )]
+    public function search(Request $request, TravelRepository $repo): JsonResponse
+    {
+        // Récupération des paramètres de la requête
+        $date      = $request->query->get('date');
+        $depGeoX   = (float) $request->query->get('depGeoX');
+        $depGeoY   = (float) $request->query->get('depGeoY');
+        $arrGeoX   = (float) $request->query->get('arrGeoX');
+        $arrGeoY   = (float) $request->query->get('arrGeoY');
 
-// #[Route('/api/travels', name: 'travel_results', methods: ['GET'])]
-// #[OA\Get(
-//     path: '/api/travels',
-//     summary: 'Recherche de voyages',
-//     description: 'Retourne la liste des voyages correspondant aux critères.',
-//     parameters: [
-//         new OA\QueryParameter(
-//             name: 'date',
-//             description: 'Date du voyage (format YYYY-MM-DD)',
-//             required: true,
-//             schema: new OA\Schema(type: 'string', format: 'date')
-//         ),
-//         new OA\QueryParameter(
-//             name: 'start',
-//             description: 'Ville de départ',
-//             required: true,
-//             schema: new OA\Schema(type: 'string')
-//         ),
-//         new OA\QueryParameter(
-//             name: 'end',
-//             description: 'Ville d’arrivée',
-//             required: true,
-//             schema: new OA\Schema(type: 'string')
-//         )
-//     ],
-//     responses: [
-//         new OA\Response(
-//             response: 200,
-//             description: 'Liste des voyages trouvés',
-//             content: new OA\JsonContent(type: 'array', items: new OA\Items(ref: '#/components/schemas/Travel'))
-//         )
-//     ]
-// )]
-// public function search(Request $request, TravelRepository $repo): JsonResponse
-// {
-//     $travels = $repo->searchByCriteria(
-//         $request->query->get('date'),
-//         $request->query->get('start'),
-//         $request->query->get('end')
-//     );
+        // Préparation des critères pour le repo
+            $criteria = [
+                'depDateTime' => new \DateTimeImmutable($date),
+                'depGeoX'     => $depGeoX,
+                'depGeoY'     => $depGeoY,
+                'arrGeoX'     => $arrGeoX,
+                'arrGeoY'     => $arrGeoY,
+            ];
 
-//     return $this->json($travels);
-// }
+        $travels = $repo->search($criteria);
+
+        return $this->json($travels, Response::HTTP_OK);
+    }
 
 }
