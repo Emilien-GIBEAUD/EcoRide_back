@@ -159,12 +159,6 @@ final class TravelController extends AbstractController
         return new JsonResponse($responseData, Response::HTTP_OK, [], true);
     }
 
-
-// exemple chatGPT suite discussion du 12/09/2025 pour routede résultats de recherche
-// A étudier et adapter en temps voulu
-// voir chatGPT si besoin pour la méthode de recherche dans TravelRepository
-// GET /api/travel/results?date={date}&start={start}&end={end}
-
     #[Route('/search', name: 'travel_search', methods: ['GET'])]
     #[OA\Get(
         path: '/api/travel/search',
@@ -229,8 +223,39 @@ final class TravelController extends AbstractController
             ];
 
         $travels = $repo->search($criteria);
+        $responseData = $this->serializer->serialize($travels,"json");
+        return new JsonResponse($responseData, Response::HTTP_OK, [], true);
+    }
 
-        return $this->json($travels, Response::HTTP_OK);
+    #[Route('/{id}', name: 'travel', methods: ['GET'])]
+    #[OA\Get(
+        path: '/api/travel/{id}',
+        summary: 'Affiche tous les détails d\'un voyage',
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                in: 'path',
+                required: true,
+                description: 'id du voyage à afficher',
+                schema: new OA\Schema(type: 'number', example: 1)
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Voyage trouvé avec succès',
+            ),
+            new OA\Response(
+                response: 404,
+                description: 'Voyage(s) non trouvé(s)'
+            )
+        ]
+    )]
+    public function show($id, TravelRepository $repo): Response
+    {
+        $travel = $repo->showById($id);
+        $responseData = $this->serializer->serialize($travel,"json");
+        return new JsonResponse($responseData, Response::HTTP_OK, [], true);
     }
 
 }
