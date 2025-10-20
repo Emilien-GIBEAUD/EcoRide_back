@@ -54,13 +54,14 @@ class TravelRepository extends ServiceEntityRepository
         return $result->fetchAllAssociative();
     }
 
-    public function showById(int $id): array
+    public function showById(int $id)
     {
         $conn = $this->getEntityManager()->getConnection();     // équivalent de $pdo = new PDO(...)
         $sql = "
             SELECT  t.id,
                     t.eco,
                     t.available_place,
+                    t.travel_place,
                     t.price,
                     t.dep_date_time,
                     t.dep_address,
@@ -68,16 +69,23 @@ class TravelRepository extends ServiceEntityRepository
                     t.arr_address,
                     u.avatar_file,
                     u.pseudo,
-                    u.note
+                    u.note,
+                    b.brand,
+                    m.model,
+                    e.energy
             FROM travel AS t
             LEFT JOIN travel_user AS tu ON tu.travel_id = t.id AND tu.travel_role = 'driver'
             LEFT JOIN user AS u ON u.id = tu.user_id
+            LEFT JOIN car AS c ON c.id = t.car_id
+            LEFT JOIN energy AS e ON e.id = c.energy_id
+            LEFT JOIN model AS m ON m.id = c.model_id
+            LEFT JOIN brand AS b ON b.id = m.brand_id
             WHERE t.id = :id;
         ";
         $stmt = $conn->prepare($sql);
         $stmt->bindValue(":id", $id, ParameterType::INTEGER);
         $result = $stmt->executeQuery();
-        return $result->fetchAllAssociative();
+        return $result->fetchAssociative();
     }
 
     //    /**
