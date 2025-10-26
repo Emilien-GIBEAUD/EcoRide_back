@@ -1,6 +1,9 @@
--- Ce script permet de créer les tables de la base de données pour l'application EcoRide (si on n'utilisait pas Doctrine).
+CREATE DATABASE dossier_projet
+    DEFAULT CHARACTER SET = 'utf8mb4';
 
-CREATE TABLE User_(
+USE dossier_projet;
+
+CREATE TABLE User(
     Id_User INT AUTO_INCREMENT,
     first_name VARCHAR(255)  NOT NULL,
     last_name VARCHAR(255)  NOT NULL,
@@ -12,7 +15,7 @@ CREATE TABLE User_(
     password VARCHAR(255)  NOT NULL,
     api_tocken VARCHAR(255)  NOT NULL,
     roles VARCHAR(255)  NOT NULL,
-    usage_role_ VARCHAR(255)  NOT NULL,
+    usage_role VARCHAR(255)  NOT NULL,
     active BOOLEAN NOT NULL,
     created_at DATETIME NOT NULL,
     updated_at DATETIME,
@@ -50,7 +53,7 @@ CREATE TABLE Preference(
     Id_User INT NOT NULL,
     PRIMARY KEY(Id_Preference),
     UNIQUE(Id_User),
-    FOREIGN KEY(Id_User) REFERENCES User_(Id_User)
+    FOREIGN KEY(Id_User) REFERENCES User(Id_User)
 );
 CREATE TABLE Energy(
     Id_Energy INT AUTO_INCREMENT,
@@ -75,7 +78,7 @@ CREATE TABLE Car(
     FOREIGN KEY(Id_Model) REFERENCES Model(Id_Model),
     FOREIGN KEY(Id_Energy) REFERENCES Energy(Id_Energy),
     FOREIGN KEY(Id_Color) REFERENCES Color(Id_Color),
-    FOREIGN KEY(Id_User) REFERENCES User_(Id_User)
+    FOREIGN KEY(Id_User) REFERENCES User(Id_User)
 );
 CREATE TABLE Travel(
     Id_Travel INT AUTO_INCREMENT,
@@ -105,6 +108,6 @@ CREATE TABLE Travel_user(
     travel_role VARCHAR(50)  NOT NULL,
     PRIMARY KEY(Id_Travel, Id_User),
     FOREIGN KEY(Id_Travel) REFERENCES Travel(Id_Travel),
-    FOREIGN KEY(Id_User) REFERENCES User_(Id_User)
+    FOREIGN KEY(Id_User) REFERENCES User(Id_User)
 );
 
