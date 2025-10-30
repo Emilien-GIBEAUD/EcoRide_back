@@ -30,3 +30,9 @@ services:
     ports:
       - "3306"
 ###< doctrine/doctrine-bundle ###
+
+###> doctrine/mongodb-odm-bundle ###
+  mongodb:
+    ports:
+      - "27017"
+###< doctrine/mongodb-odm-bundle ###

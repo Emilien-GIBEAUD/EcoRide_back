@@ -66,6 +66,47 @@ services:
     depends_on:
       - database
 
+  mongo:
+    image: mongo:${MONGODB_VERSION}
+    restart: always
+    environment:
+        MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
+        MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+    ports:
+        - ${MONGODB_PORT}:27017
+    expose:
+        - ${MONGODB_PORT}
+    volumes:
+        - nosql_database_data:/data/db
+
+  mongo-express:
+    image: mongo-express:1.0.2-20-alpine3.19
+    restart: always
+    environment:
+      ME_CONFIG_MONGODB_URL: ${MONGODB_URL}
+      ME_CONFIG_BASICAUTH_ENABLED: true
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGODB_USER}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGODB_PASSWORD}
+    ports:
+      - 8081:8081
+    depends_on:
+      - mongo
+
+###> doctrine/mongodb-odm-bundle ###
+  mongodb:
+    # In production, you may want to use a managed database service
+    image: mongodb/mongodb-atlas-local:latest
+    environment:
+      - MONGODB_INITDB_DATABASE=${MONGODB_DB:-app}
+      # You should definitely set a root username and password in production
+      - MONGODB_INITDB_ROOT_USERNAME=${MONGODB_USERNAME:-}
+      - MONGODB_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD:-}
+    volumes:
+      - mongodb_data:/data/db:rw
+      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
+      # - ./docker/mongodb/data:/data/db:rw
+###< doctrine/mongodb-odm-bundle ###
+
 volumes:
   caddy_data:
   caddy_config:
@@ -74,4 +115,9 @@ volumes:
 
 ###> doctrine/doctrine-bundle ###
   database_data:
+  nosql_database_data:
 ###< doctrine/doctrine-bundle ###
+
+###> doctrine/mongodb-odm-bundle ###
+  mongodb_data:
+###< doctrine/mongodb-odm-bundle ###
