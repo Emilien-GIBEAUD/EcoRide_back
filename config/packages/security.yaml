@@ -31,13 +31,23 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        - { path: ^api/user/registration, roles: PUBLIC_ACCESS }
-        - { path: ^api/doc, roles: PUBLIC_ACCESS }
-        - { path: ^/api/brand, roles: ROLE_USER }
-        - { path: ^/api/color, roles: ROLE_USER }
-        - { path: ^/api/energy, roles: ROLE_USER }
-        - { path: ^/api/model, roles: ROLE_USER }
-        - { path: ^/api/car, roles: ROLE_USER }
+        - { path: ^api/doc                 , roles: PUBLIC_ACCESS }
+
+        - { path: ^api/user/registration   , roles: PUBLIC_ACCESS }
+        - { path: ^api/user/login          , roles: PUBLIC_ACCESS }
+        - { path: ^api/user                , roles: ROLE_USER }
+
+        - { path: ^/api/brand              , roles: ROLE_USER }
+        - { path: ^/api/color              , roles: ROLE_USER }
+        - { path: ^/api/energy             , roles: ROLE_USER }
+        - { path: ^/api/model              , roles: ROLE_USER }
+        - { path: ^/api/car                , roles: ROLE_USER }
+
+        - { path: ^api/travel/search       , roles: PUBLIC_ACCESS }
+        - { path: ^api/travel              , roles: ROLE_USER }
+
+        - { path: ^api/review/list         , roles: PUBLIC_ACCESS }
+        - { path: ^api/review              , roles: ROLE_USER }
 
 when@test:
     security:

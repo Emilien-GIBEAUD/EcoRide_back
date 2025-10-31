@@ -33,6 +33,7 @@ RUN set -eux; \
 		intl \
 		opcache \
 		zip \
+		mongodb \
 	;
 
 # https://getcomposer.org/doc/03-cli.md#composer-allow-superuser
@@ -44,6 +45,9 @@ ENV MERCURE_TRANSPORT_URL=bolt:///data/mercure.db
 ENV PHP_INI_SCAN_DIR=":$PHP_INI_DIR/app.conf.d"
 
 ###> recipes ###
+###> doctrine/mongodb-odm-bundle ###
+RUN install-php-extensions mongodb
+###< doctrine/mongodb-odm-bundle ###
 ###> doctrine/doctrine-bundle ###
 RUN install-php-extensions pdo_mysql
 ###< doctrine/doctrine-bundle ###
