@@ -1,0 +1,17 @@
+# 1. Copier ce fichier dans le dossier de prod de PHPMyAdmin (en le renommant en compose.yaml)
+# 2. Lancer les conteneurs avec : sudo docker compose up -d
+services:
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    container_name: ecoride_phpmyadmin
+    environment:
+      PMA_HOST: database
+    networks:
+      - ecoride_back
+      - edge_edge
+
+networks:
+  edge_edge:
+    external: true
+  ecoride_back:
+    external: true

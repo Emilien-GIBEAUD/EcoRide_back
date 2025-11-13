@@ -1,0 +1,81 @@
+http:
+  routers:
+    site-router:
+      rule: "Host(`ecoridedupicton.me`) || Host(`www.ecoridedupicton.me`)"
+      entryPoints: ["web", "websecure"]
+      tls:
+        certResolver: myresolver
+      service: site-svc
+
+    api-router:
+      rule: "Host(`api.ecoridedupicton.me`)"
+      entryPoints: ["web", "websecure"]
+      tls:
+        certResolver: myresolver
+      middlewares: ["cors"]
+      service: api-svc
+
+    traefik-router:
+      rule: "Host(`traefik.ecoridedupicton.me`)"
+      entryPoints: ["websecure"]
+      tls:
+        certResolver: myresolver
+      middlewares: ["dashboard-auth"]
+      service: api@internal
+
+    phpmyadmin-router:
+      rule: "Host(`pma.ecoridedupicton.me`)"
+      entryPoints: ["websecure"]
+      tls:
+        certResolver: myresolver
+      service: phpmyadmin-svc
+
+    mongo-express-router:
+      rule: "Host(`me.ecoridedupicton.me`)"
+      entryPoints: ["websecure"]
+      tls:
+        certResolver: myresolver
+      service: mongo-express-svc
+
+  services:
+    site-svc:
+      loadBalancer:
+        servers:
+          - url: "http://ecoride:80"
+
+    api-svc:
+      loadBalancer:
+        servers:
+          - url: "http://php:80"
+
+    phpmyadmin-svc:
+      loadBalancer:
+        servers:
+          - url: "http://ecoride_phpmyadmin:80"
+
+    mongo-express-svc:
+      loadBalancer:
+        servers:
+          - url: "http://ecoride_mongo_express:8081"
+
+
+  middlewares:
+    cors:
+      headers:
+        accessControlAllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        accessControlAllowOriginList:
+          - "*"
+        accessControlAllowHeaders:
+          - "*"
+        accessControlMaxAge: 86400
+        addVaryHeader: true
+
+    dashboard-auth:
+      basicAuth:
+        users:
+          - "smarteel:$$apr1$$O6iqc.qb$$F27.cUoM8wWcE251CKtg4/"

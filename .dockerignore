@@ -24,6 +24,8 @@
 .github/
 docs/
 public/bundles/
+/public/uploads/avatars/*
+!/public/uploads/avatars/user.svg
 tests/
 var/
 vendor/

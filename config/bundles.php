@@ -12,6 +12,6 @@ return [
     Twig\Extra\TwigExtraBundle\TwigExtraBundle::class => ['all' => true],
     Vich\UploaderBundle\VichUploaderBundle::class => ['all' => true],
     Symfony\Bundle\MonologBundle\MonologBundle::class => ['all' => true],
-    Doctrine\Bundle\FixturesBundle\DoctrineFixturesBundle::class => ['dev' => true, 'test' => true],
+    Doctrine\Bundle\FixturesBundle\DoctrineFixturesBundle::class => ['all' => true],
     Doctrine\Bundle\MongoDBBundle\DoctrineMongoDBBundle::class => ['all' => true],
 ];

@@ -1,7 +1,7 @@
 #syntax=docker/dockerfile:1
 
 # Versions
-FROM dunglas/frankenphp:1.9.1-php8.3.26 AS frankenphp_upstream
+FROM dunglas/frankenphp:1.9.1-php8.3.27 AS frankenphp_upstream
 
 # The different stages of this Dockerfile are meant to be built into separate images
 # https://docs.docker.com/develop/develop-images/multistage-build/#stop-at-a-specific-build-stage
@@ -24,7 +24,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	git \
 	make \
 	nano \
+	bash \
+	readline-common \
 	&& rm -rf /var/lib/apt/lists/*
+
+# Use bash as default shell
+SHELL ["/bin/bash", "-c"]
 
 RUN set -eux; \
 	install-php-extensions \
@@ -88,6 +93,8 @@ ENV APP_ENV=prod
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
 COPY --link frankenphp/conf.d/20-app.prod.ini $PHP_INI_DIR/app.conf.d/
+# Use a specific Caddyfile in prod
+COPY --link frankenphp/Caddyfile.prod /etc/frankenphp/Caddyfile
 
 # prevent the reinstallation of vendors at every changes in the source code
 COPY --link composer.* symfony.* ./

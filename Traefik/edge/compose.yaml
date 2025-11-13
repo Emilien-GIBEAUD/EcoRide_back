@@ -1,0 +1,39 @@
+services:
+  traefik:
+    image: traefik:3.6
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.myresolver.acme=true
+      - --certificatesresolvers.myresolver.acme.email=your_email
+      - --certificatesresolvers.myresolver.acme.httpchallenge=true
+      - --certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json
+      - --log.level=INFO
+      # - --log.level= A VOIR POUR AUTRE OPTIONS
+      - --api.dashboard=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.file.directory=/etc/traefik/dynamic
+      - --providers.file.watch=true
+      - --configFile=/etc/traefik/traefik.yaml
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - ./traefik/traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
+      - ./letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - edge
+
+networks:
+  edge:
+    driver: bridge

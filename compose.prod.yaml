@@ -1,30 +1,58 @@
-# Production environment override
+# 1. Copier ce fichier dans le dossier de prod (en le renommant en compose.yaml)
+# 2. Lancer les conteneurs avec : sudo docker compose up -d
 services:
   php:
-    build:
-      context: .
-      target: frankenphp_prod
+    image: emiliengibeaud/ecoride_api:latest
+    container_name: ecoride_api
+    restart: unless-stopped
     environment:
-      APP_SECRET: ${APP_SECRET}
-      MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
-      MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
+      APP_ENV: prod
+      SERVER_NAME: api.ecoridedupicton.me
+      # Doctrine ORM → MariaDB
+      DATABASE_URL: "mysql://${MARIADB_USER}:${MARIADB_PASSWORD}@database:3306/${MARIADB_DATABASE}?serverVersion=${MARIADB_VERSION:-11.5.2}-MariaDB&charset=utf8mb4"
+      # Doctrine ODM → MongoDB
+      MONGODB_URL: "mongodb://${MONGODB_USER}:${MONGODB_PASSWORD}@mongo:27017/"
+
+    volumes:
+      - avatars_data:/app/public/uploads
+
     networks:
-      - ecoride-network
-    depends_on:
-      database:
-        condition: service_healthy
+      - edge_edge
+      - ecoride_back
 
   database:
+    image: mariadb:${MARIADB_VERSION}
+    container_name: ecoride_db
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+      MARIADB_RANDOM_ROOT_PASSWORD: "true"
+    volumes:
+      - mariadb_data:/var/lib/mysql
     networks:
-      - ecoride-network
+      - ecoride_back
 
-  phpmyadmin:
+  mongo:
+    image: mongo:${MONGODB_VERSION}
+    container_name: ecoride_mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+    volumes:
+      - mongodb_data:/data/db
     networks:
-      - ecoride-network
-      - traefik_proxy
+      - ecoride_back
 
 networks:
-  traefik_proxy:
+  edge_edge:
     external: true
-  ecoride-network:
+  ecoride_back:
     external: true
+
+volumes:
+  avatars_data:
+  mariadb_data:
+  mongodb_data:

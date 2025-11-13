@@ -1,0 +1,21 @@
+# 1. Copier ce fichier dans le dossier de prod de Mongo Express (en le renommant en compose.yaml)
+# 2. Lancer les conteneurs avec : sudo docker compose up -d
+services:
+  mongo-express:
+    image: mongo-express:1.0.2-20-alpine3.19
+    container_name: ecoride_mongo_express
+    restart: unless-stopped
+    environment:
+      ME_CONFIG_MONGODB_URL: ${MONGODB_URL}
+      ME_CONFIG_BASICAUTH_ENABLED: true
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGODB_USER}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGODB_PASSWORD}
+    networks:
+      - ecoride_back
+      - edge_edge
+
+networks:
+  edge_edge:
+    external: true
+  ecoride_back:
+    external: true

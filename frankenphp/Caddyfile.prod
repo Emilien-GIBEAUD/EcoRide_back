@@ -1,0 +1,26 @@
+{
+    auto_https off
+    admin off
+
+	frankenphp {
+		{$FRANKENPHP_CONFIG}
+
+		worker {
+			file ./public/index.php
+			env APP_RUNTIME Runtime\FrankenPhpSymfony\Runtime
+			{$FRANKENPHP_WORKER_CONFIG}
+		}
+	}
+}
+
+:80 {
+    root * /app/public
+    encode gzip zstd
+
+    php_server {
+        root /app/public
+        index index.php
+    }
+
+    file_server
+}
